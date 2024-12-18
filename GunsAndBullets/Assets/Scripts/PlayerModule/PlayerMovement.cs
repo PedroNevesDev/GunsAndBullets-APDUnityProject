@@ -11,6 +11,7 @@ public class PlayerMovement : MonoBehaviour
 
     public float walkSpeed;
     public float sprintSpeed;
+    public float wallRunSpeed;
     public float groundDrag;
     
     [Header("Jump")]
@@ -44,8 +45,21 @@ public class PlayerMovement : MonoBehaviour
     Rigidbody rb;
     
     public MovementState state;
-    public enum MovementState { walking, sprinting, crouching, air };
+
+    public enum MovementState 
+    { 
+        walking, 
+        sprinting, 
+        wallrunning,
+        crouching, 
+        air 
+    };
+
+    public bool wallrunning;
     
+    LayerMask wallRunningLayer;
+
+    float startingMass;
     
     void Start()
     {
@@ -55,6 +69,8 @@ public class PlayerMovement : MonoBehaviour
         readyToJump = true;
         
         startYScale = transform.localScale.y;
+
+        startingMass = rb.mass;
     }
     void Update()
     {
@@ -101,6 +117,11 @@ public class PlayerMovement : MonoBehaviour
 
     private void StateHandler()
     {
+        if(wallrunning)
+        {
+            state = MovementState.wallrunning;
+            moveSpeed = wallRunSpeed;
+        }
         if (Input.GetKeyDown(crouchKey))
         {
             state = MovementState.crouching;
@@ -168,6 +189,9 @@ public class PlayerMovement : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
+        Gizmos.DrawLine(transform.position, transform.position + (Vector3.down*playerHeight * (0.5f + 0.2f)));
+
+        Gizmos.color = Color.blue;
         Gizmos.DrawLine(transform.position, transform.position + (Vector3.down*playerHeight * (0.5f + 0.2f)));
     } 
 }
