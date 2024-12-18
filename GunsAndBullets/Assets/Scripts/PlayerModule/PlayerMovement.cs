@@ -153,6 +153,8 @@ public class PlayerMovement : MonoBehaviour
         {
             state = MovementState.air;
         }
+
+        //After doing the on slope thing change rb.useGravity = !OnSlope add condition (!wallrunning)
     }
     private void MovePlayer()
     {

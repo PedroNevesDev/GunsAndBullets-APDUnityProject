@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
+using Cinemachine;
 
 public class ThirdPersonCam : MonoBehaviour
 {
@@ -20,6 +22,7 @@ public class ThirdPersonCam : MonoBehaviour
     public GameObject thirdPersonCam;
     public GameObject combatCam;
     public GameObject topdawnCam;
+
 
     public enum CameraStyle
     {
