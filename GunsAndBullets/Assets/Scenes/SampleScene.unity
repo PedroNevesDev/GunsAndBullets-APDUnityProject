@@ -2622,7 +2622,6 @@ GameObject:
   - component: {fileID: 1245083961}
   - component: {fileID: 1245083963}
   - component: {fileID: 1245083964}
-  - component: {fileID: 1245083965}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -2728,7 +2727,7 @@ MonoBehaviour:
   wallJumpUpForce: 11
   wallJumpSideForce: 30
   wallClimbSpeed: 3
-  maxWallRunTime: 1.5
+  maxWallRunTime: 2
   jumpKey: 32
   upwardsRunKey: 304
   downwardsRunKey: 306
@@ -2738,19 +2737,6 @@ MonoBehaviour:
   useGravity: 1
   gravityCounterForce: 25
   orientation: {fileID: 1336534476}
---- !u!114 &1245083965
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1245083960}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f933ce1092a29f408974d1dfabe93d2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  swingKey: 323
 --- !u!1 &1264717936
 GameObject:
   m_ObjectHideFlags: 3
