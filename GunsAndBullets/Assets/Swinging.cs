@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Cinemachine;
 using UnityEngine;
 
 public class Swinging : MonoBehaviour
@@ -10,16 +11,32 @@ public class Swinging : MonoBehaviour
     public LineRenderer lr;
     public Transform lineOringin, cam, player;
     public LayerMask whatIsGrappleable;
+    public PlayerMovement pm;
 
     [Header("Swinging")]
-    private float maxSwingDistance = 25f;
+    public float maxSwingDistance = 25f;
     private Vector3 swingPoint = Vector3.zero;
     private SpringJoint joint;
 
     public GrappleUI grappleCanvas;
 
-    bool swinging;
+    [Header("AirMovement")]
+    public Transform orientation;
+    public Rigidbody rb;
+    public float horizontalThrustForce;
+    public float forwardThrustForce;
+    public float extendCableSpeed;
+
+    ThirdPersonCam myThirdPersonCamController;
+    public Transform invisisbleGameObject;
+
     
+    void Start()
+    {
+        pm = GetComponent<PlayerMovement>();
+        rb = GetComponent<Rigidbody>();
+        myThirdPersonCamController = Camera.main.GetComponent<ThirdPersonCam>();
+    }
 
     void Update()
     {
@@ -29,9 +46,14 @@ public class Swinging : MonoBehaviour
         if(Input.GetKeyUp(swingKey))StopSwing();
         UpdateLineRenderer();
     }
+
+    void FixedUpdate()
+    {
+        if(joint!=null) AirMovement();
+    }
     private void CheckForGrappleable()
     {
-        if(swinging)return;
+        if(pm.swinging)return;
         //Reseting swingPoint per detection
         swingPoint = Vector3.zero;
 
@@ -39,14 +61,13 @@ public class Swinging : MonoBehaviour
         Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
 
         // Perform a sphere cast to detect nearby grappleable objects
-        RaycastHit[] hits = Physics.SphereCastAll(cam.position, 5f, cam.forward, maxSwingDistance, whatIsGrappleable);
+        RaycastHit[] hits = Physics.SphereCastAll(cam.position, 15f, cam.forward, maxSwingDistance, whatIsGrappleable);
 
         foreach (var hit in hits)
         {
             // Check if the object is within the camera's frustum
             if (GeometryUtility.TestPlanesAABB(frustumPlanes, hit.collider.bounds))
             {
-                print("Found " + hit.collider.name);
                 swingPoint = hit.point;
                 break; // Start swinging with the first valid hit
             }
@@ -54,10 +75,38 @@ public class Swinging : MonoBehaviour
     }
     void UpdateLineRenderer()
     {
-        if(swinging)
+        if(pm.swinging)
         {
             lr.SetPosition(0,player.position);
             lr.SetPosition(1,swingPoint);
+            invisisbleGameObject.transform.position = swingPoint;
+        }
+    }
+
+    void AirMovement()
+    {
+        float horizontalInput = Input.GetAxisRaw("Horizontal");
+        float verticalInput = Input.GetAxisRaw("Vertical");
+        Vector3 dirForce = orientation.right * horizontalInput * horizontalThrustForce + orientation.forward * verticalInput * forwardThrustForce;
+        rb.AddForce(dirForce*Time.fixedDeltaTime);
+
+        if(Input.GetKey(KeyCode.Space))
+        {
+            Vector3 directionToPoint = swingPoint - transform.position;
+            rb.AddForce(directionToPoint.normalized * forwardThrustForce * Time.fixedDeltaTime);
+
+            float distanceFromPoint = Vector3.Distance(transform.position, swingPoint);
+
+            joint.maxDistance = distanceFromPoint * 0.8f;
+            joint.minDistance = distanceFromPoint * 0.25f;
+        }
+
+        if(Input.GetKey(KeyCode.S))
+        {
+            float extendedDistanceFromPoint = Vector3.Distance(transform.position, swingPoint) + extendCableSpeed;
+
+            joint.maxDistance = extendedDistanceFromPoint * 0.8f;
+            joint.minDistance = extendedDistanceFromPoint * 0.25f;
         }
     }
     void UpdateGrappleUI()
@@ -77,7 +126,8 @@ public class Swinging : MonoBehaviour
     {
         if(swingPoint==Vector3.zero) return;
 
-        swinging = true;
+        myThirdPersonCamController.SwitchCameraStyle(ThirdPersonCam.CameraStyle.Swinging);
+        pm.swinging = true;
         joint = player.gameObject.AddComponent<SpringJoint>();
         joint.autoConfigureConnectedAnchor = false;
         joint.connectedAnchor = swingPoint;
@@ -96,7 +146,8 @@ public class Swinging : MonoBehaviour
 
     private void StopSwing()
     {
-        swinging = false;
+        myThirdPersonCamController.SwitchCameraStyle(ThirdPersonCam.CameraStyle.Basic);
+        pm.swinging = false;
         lr.positionCount = 0;
         if (joint != null) Destroy(joint);
     }

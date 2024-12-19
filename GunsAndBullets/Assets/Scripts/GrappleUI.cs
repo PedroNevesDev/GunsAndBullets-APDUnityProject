@@ -11,10 +11,8 @@ public class GrappleUI : MonoBehaviour
 
     [Header("Animation Settings")]
     public float scaleSpeed = 2f;
-    public Vector3 rotationAxis = Vector3.up; // Axis of rotation (e.g., up = y-axis)
     public float speed = 10f;                // Rotation speed
 
-    private Quaternion targetRotation;
     public Image image;
 
     Vector3 startScale;
@@ -35,11 +33,12 @@ public class GrappleUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        targetRotation *= Quaternion.Euler(rotationAxis * speed * Time.deltaTime);
-                // Rotate smoothly towards the target
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * speed);
 
-        currentSize = Mathf.Lerp(currentSize,targetSize,scaleSpeed*Time.deltaTime);
-        image.transform.localScale = startScale * currentSize; 
+        // Smoothly rotate the image towards the target rotation
+        image.transform.rotation = Quaternion.Lerp(image.transform.rotation, image.transform.rotation * Quaternion.Euler(image.transform.forward * speed * Time.deltaTime), Time.deltaTime * speed);
+
+        // Smoothly scale the image
+        currentSize = Mathf.Lerp(currentSize, targetSize, scaleSpeed * Time.deltaTime);
+        image.transform.localScale = startScale * currentSize;
     }
 }

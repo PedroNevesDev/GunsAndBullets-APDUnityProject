@@ -51,13 +51,14 @@ public class PlayerMovement : MonoBehaviour
     { 
         walking, 
         sprinting, 
+        swinging,
         wallrunning,
         crouching, 
         air 
     };
 
     public bool wallrunning;
-    
+    public bool swinging;
     LayerMask wallRunningLayer;
 
     float startingMass;
@@ -123,6 +124,11 @@ public class PlayerMovement : MonoBehaviour
             state = MovementState.wallrunning;
             moveSpeed = wallRunSpeed;
         }
+        else if(swinging)
+        {
+            state = MovementState.swinging;
+            moveSpeed = swingSpeed;
+        }
         if (Input.GetKeyDown(crouchKey))
         {
             state = MovementState.crouching;
@@ -159,6 +165,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private void MovePlayer()
     {
+        if(swinging)return;
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
         
         if(grounded)

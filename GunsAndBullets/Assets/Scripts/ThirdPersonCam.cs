@@ -21,13 +21,15 @@ public class ThirdPersonCam : MonoBehaviour
     public GameObject thirdPersonCam;
     public GameObject combatCam;
     public GameObject topdawnCam;
+    public GameObject swingingCam;
 
 
     public enum CameraStyle
     {
         Basic,
         Combat,
-        Topdown
+        Topdown,
+        Swinging,
     }
     void Start()
     {
@@ -52,6 +54,9 @@ public class ThirdPersonCam : MonoBehaviour
             break;
 
             case CameraStyle.Topdown:TopdownCamera();
+            break;
+
+            case CameraStyle.Swinging:SwingingCam();
             break;
 
         }
@@ -81,17 +86,22 @@ public class ThirdPersonCam : MonoBehaviour
 
             playerObj.forward = dirToCombatLookAt.normalized;
     }
+    void SwingingCam()
+    {
+
+    }
 
     void TopdownCamera()
     {
         BasicCamera();
     }
 
-    void SwitchCameraStyle( CameraStyle newStyle)
+    public void SwitchCameraStyle( CameraStyle newStyle)
     {
         thirdPersonCam.SetActive(false);
         combatCam.SetActive(false);
         topdawnCam.SetActive(false);
+        swingingCam.SetActive(false);
 
         switch(newStyle)
         {
@@ -100,6 +110,8 @@ public class ThirdPersonCam : MonoBehaviour
             case CameraStyle.Combat:combatCam.SetActive(true);
             break;
             case CameraStyle.Topdown:topdawnCam.SetActive(true);
+            break;
+            case CameraStyle.Swinging:swingingCam.SetActive(true);
             break;
         }
 
