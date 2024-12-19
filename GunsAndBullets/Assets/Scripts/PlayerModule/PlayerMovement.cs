@@ -12,6 +12,7 @@ public class PlayerMovement : MonoBehaviour
     public float walkSpeed;
     public float sprintSpeed;
     public float wallRunSpeed;
+    public float swingSpeed;
     public float groundDrag;
     
     [Header("Jump")]
