@@ -53,12 +53,15 @@ public class PlayerMovement : MonoBehaviour
         sprinting, 
         swinging,
         wallrunning,
-        crouching, 
+        crouching,
+        freeze, 
         air 
     };
 
     public bool wallrunning;
     public bool swinging;
+    public bool freeze;
+    public bool activeGrapple;
     LayerMask wallRunningLayer;
 
     float startingMass;
@@ -80,9 +83,9 @@ public class PlayerMovement : MonoBehaviour
         
         MyInput();
         SpeedControl();
-        StateHandler();
+        StateMachine();
         
-        if(grounded)
+        if(grounded && !activeGrapple)
             rb.drag = groundDrag;
         else
             rb.drag = 0;
@@ -117,9 +120,15 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void StateHandler()
+    private void StateMachine()
     {
-        if(wallrunning)
+        if(freeze)
+        {
+            state = MovementState.freeze;
+            moveSpeed = 0;
+            rb.velocity = Vector3.zero;
+        }
+        else if(wallrunning)
         {
             state = MovementState.wallrunning;
             moveSpeed = wallRunSpeed;
@@ -129,24 +138,14 @@ public class PlayerMovement : MonoBehaviour
             state = MovementState.swinging;
             moveSpeed = swingSpeed;
         }
-        if (Input.GetKeyDown(crouchKey))
+
+        else if (Input.GetKeyDown(crouchKey))
         {
             state = MovementState.crouching;
             moveSpeed = crouchSpeed;
         }
         
-        //up here
-        //here
-        //here
-        //here
-        //here
-        
-        
-        
-        
-        
-        
-        if (grounded && Input.GetKey(sprintKey))
+        else if (grounded && Input.GetKey(sprintKey))
         {
             state = MovementState.sprinting;
             moveSpeed = sprintSpeed;
@@ -165,7 +164,9 @@ public class PlayerMovement : MonoBehaviour
     }
     private void MovePlayer()
     {
+        if(activeGrapple) return;
         if(swinging)return;
+
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
         
         if(grounded)
@@ -176,6 +177,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void SpeedControl()
     {
+        if(activeGrapple) return;
+
         Vector3 flatVel = new Vector3(rb.velocity.x, 0, rb.velocity.z);
 
         if (flatVel.magnitude > moveSpeed)
@@ -194,6 +197,53 @@ public class PlayerMovement : MonoBehaviour
     private void ResetJump()
     {
         readyToJump = true;
+    }
+
+    public void JumpToPosition(Vector3 targetPosition, float trajectoryHeight)
+    {
+        activeGrapple = true;
+
+
+        velocityToSet = CalculateJumpVelocity(transform.position, targetPosition, trajectoryHeight);
+
+        Invoke(nameof(SetVelocity), 0.1f);
+
+        Invoke(nameof(ResetRestriction), 3f);
+    }
+    private Vector3 velocityToSet;
+
+    private bool enableMovementOnNextTouch;
+    private void SetVelocity()
+    {
+        enableMovementOnNextTouch = true;
+        rb.velocity = velocityToSet;
+    }
+    Vector3 CalculateJumpVelocity(Vector3 startPoint, Vector3 endPoint, float trajectoryHeight)
+    {
+        float gravity = Physics.gravity.y;
+        float displacementY = endPoint.y - startPoint.y;
+        Vector3 displacementeXZ = new Vector3(endPoint.x - startPoint.x, 0f, endPoint.z - startPoint.z);
+
+        Vector3 velocityY = Vector3.up * Mathf.Sqrt(-2 * trajectoryHeight * gravity);
+        Vector3 velocityXZ = displacementeXZ / (Mathf.Sqrt(-2 * trajectoryHeight / gravity)
+            + Mathf.Sqrt(2 * (displacementY - trajectoryHeight) / gravity));
+
+        return velocityXZ + velocityY;
+    }
+
+    void OnCollisionEnter(Collision other) 
+    {
+        if(enableMovementOnNextTouch)
+        {
+            enableMovementOnNextTouch = false;
+            ResetRestriction();
+            GetComponent<Grappling>().StopGrapple();
+        }
+    }
+
+    void ResetRestriction()
+    {
+        activeGrapple = false;
     }
 
     private void OnDrawGizmos()

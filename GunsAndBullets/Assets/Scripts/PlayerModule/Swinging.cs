@@ -10,7 +10,7 @@ public class Swinging : MonoBehaviour
     [Header("References")]
     public LineRenderer lr;
     public Transform lineOringin, cam, player;
-    public LayerMask whatIsGrappleable;
+    public LayerMask whatIsSwingable;
     public PlayerMovement pm;
 
     [Header("Swinging")]
@@ -18,7 +18,7 @@ public class Swinging : MonoBehaviour
     private Vector3 swingPoint = Vector3.zero;
     private SpringJoint joint;
 
-    public GrappleUI grappleCanvas;
+    public GrappleUI swingCanvas;
 
     [Header("AirMovement")]
     public Transform orientation;
@@ -40,18 +40,23 @@ public class Swinging : MonoBehaviour
 
     void Update()
     {
-        CheckForGrappleable();
+        CheckForSwingable();
         UpdateGrappleUI();
         if(Input.GetKeyDown(swingKey))StartSwing();
         if(Input.GetKeyUp(swingKey))StopSwing();
-        UpdateLineRenderer();
+
     }
 
     void FixedUpdate()
     {
         if(joint!=null) AirMovement();
     }
-    private void CheckForGrappleable()
+
+    void LateUpdate()
+    {
+        UpdateLineRenderer();        
+    }
+    private void CheckForSwingable()
     {
         if(pm.swinging)return;
         //Reseting swingPoint per detection
@@ -61,7 +66,7 @@ public class Swinging : MonoBehaviour
         Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
 
         // Perform a sphere cast to detect nearby grappleable objects
-        RaycastHit[] hits = Physics.SphereCastAll(cam.position, 15f, cam.forward, maxSwingDistance, whatIsGrappleable);
+        RaycastHit[] hits = Physics.SphereCastAll(cam.position, 15f, cam.forward, maxSwingDistance, whatIsSwingable);
 
         foreach (var hit in hits)
         {
@@ -113,12 +118,12 @@ public class Swinging : MonoBehaviour
     {
         if(swingPoint==Vector3.zero)
         {
-            grappleCanvas.gameObject.SetActive(false);
+            swingCanvas.gameObject.SetActive(false);
         }
         else
         {
-            grappleCanvas.transform.position = swingPoint;
-            grappleCanvas.gameObject.SetActive(true);
+            swingCanvas.transform.position = swingPoint;
+            swingCanvas.gameObject.SetActive(true);
         }
     }
 
