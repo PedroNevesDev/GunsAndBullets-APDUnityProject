@@ -30,11 +30,12 @@ public class Swinging : MonoBehaviour
     ThirdPersonCam myThirdPersonCamController;
     public Transform invisisbleGameObject;
 
-    
+    private Grappling grapple;
     void Start()
     {
         pm = GetComponent<PlayerMovement>();
         rb = GetComponent<Rigidbody>();
+        grapple = GetComponent<Grappling>();
         myThirdPersonCamController = Camera.main.GetComponent<ThirdPersonCam>();
     }
 
@@ -131,6 +132,8 @@ public class Swinging : MonoBehaviour
     {
         if(swingPoint==Vector3.zero) return;
 
+        grapple?.StopGrapple();
+
         myThirdPersonCamController.SwitchCameraStyle(ThirdPersonCam.CameraStyle.Swinging);
         pm.swinging = true;
         joint = player.gameObject.AddComponent<SpringJoint>();
@@ -149,7 +152,7 @@ public class Swinging : MonoBehaviour
         lr.positionCount = 2;
     }
 
-    private void StopSwing()
+    public void StopSwing()
     {
         myThirdPersonCamController.SwitchCameraStyle(ThirdPersonCam.CameraStyle.Basic);
         pm.swinging = false;

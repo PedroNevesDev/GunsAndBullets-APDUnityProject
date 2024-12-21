@@ -24,10 +24,13 @@ public class Grappling : MonoBehaviour
 
     private bool grappling;
 
+    private Swinging swing;
+
     // Start is called before the first frame update
     void Start()
     {
         pm = GetComponent<PlayerMovement>();
+        swing = GetComponent<Swinging>();
     }
 
     // Update is called once per frame
@@ -49,6 +52,8 @@ public class Grappling : MonoBehaviour
     {
         if(grapplingCooldownTimer > 0) return;
         if(grapplePoint== Vector3.zero) return;
+
+                swing?.StopSwing();
         
         grappling = true;
 
