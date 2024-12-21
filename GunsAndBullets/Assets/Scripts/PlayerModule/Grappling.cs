@@ -26,11 +26,16 @@ public class Grappling : MonoBehaviour
 
     private Swinging swing;
 
+    ThirdPersonCam myThirdPersonCamController;
+
+    public Transform invisisbleGameObject;
+
     // Start is called before the first frame update
     void Start()
     {
         pm = GetComponent<PlayerMovement>();
         swing = GetComponent<Swinging>();
+        myThirdPersonCamController = Camera.main.GetComponent<ThirdPersonCam>();
     }
 
     // Update is called once per frame
@@ -53,7 +58,8 @@ public class Grappling : MonoBehaviour
         if(grapplingCooldownTimer > 0) return;
         if(grapplePoint== Vector3.zero) return;
 
-                swing?.StopSwing();
+        swing?.StopSwing();
+
         
         grappling = true;
 
@@ -67,6 +73,7 @@ public class Grappling : MonoBehaviour
             lr.positionCount = 2;
             lr.SetPosition(0,player.position);
             lr.SetPosition(1,grapplePoint);
+            invisisbleGameObject.transform.position = grapplePoint;
         }
     }
     void UpdateGrappleUI()
@@ -109,6 +116,8 @@ public class Grappling : MonoBehaviour
     {
         pm.freeze = false;    
 
+        myThirdPersonCamController.SwitchCameraStyle(ThirdPersonCam.CameraStyle.Swinging);
+
         Vector3 lowestPoint = new Vector3(transform.position.x, transform.position.y - 1f, transform.position.z);
 
         float grapplePointRelativeYPos = grapplePoint.y - lowestPoint.y;
@@ -122,6 +131,8 @@ public class Grappling : MonoBehaviour
 
     public void StopGrapple()
     {
+
+        myThirdPersonCamController.SwitchCameraStyle(ThirdPersonCam.CameraStyle.Basic);
         pm.freeze = false;    
 
         grappling = false;

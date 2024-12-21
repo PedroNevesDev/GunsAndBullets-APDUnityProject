@@ -237,6 +237,7 @@ public class PlayerMovement : MonoBehaviour
         {
             enableMovementOnNextTouch = false;
             ResetRestriction();
+            
             GetComponent<Grappling>().StopGrapple();
         }
     }
