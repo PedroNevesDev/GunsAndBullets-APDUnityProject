@@ -65,7 +65,10 @@ public class PlayerMovement : MonoBehaviour
     LayerMask wallRunningLayer;
 
     float startingMass;
-    
+
+    private Vector3 velocityToSet;
+    private bool enableMovementOnNextTouch;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -210,9 +213,6 @@ public class PlayerMovement : MonoBehaviour
 
         Invoke(nameof(ResetRestriction), 3f);
     }
-    private Vector3 velocityToSet;
-
-    private bool enableMovementOnNextTouch;
     private void SetVelocity()
     {
         enableMovementOnNextTouch = true;
