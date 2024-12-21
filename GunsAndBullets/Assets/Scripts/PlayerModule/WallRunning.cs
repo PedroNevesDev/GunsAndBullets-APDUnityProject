@@ -53,6 +53,10 @@ public class WallRunning : MonoBehaviour
 
     void Update()
     {
+        if(pm.freeze||pm.activeGrapple)
+         {
+            StopWallRun();return;
+         }
         CheckForWall();
         StateMachine();
     }

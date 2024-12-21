@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 
 public class Grappling : MonoBehaviour
@@ -55,6 +56,7 @@ public class Grappling : MonoBehaviour
     }
     void StartGrapple()
     {
+        if(grappling) return;
         if(grapplingCooldownTimer > 0) return;
         if(grapplePoint== Vector3.zero) return;
 
@@ -93,28 +95,28 @@ public class Grappling : MonoBehaviour
     private void CheckForGrappleable()
     {
         if(pm.swinging)return;
-        //Reseting swingPoint per detection
+        // reseting swingPoint per detection
         grapplePoint = Vector3.zero;
 
-        // Get the camera's frustum planes
+        // camera's frustum planes
         Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
 
-        // Perform a sphere cast to detect nearby grappleable objects
-        RaycastHit[] hits = Physics.SphereCastAll(cam.position, 15f, cam.forward, maxGrappleDistance, whatIsGrappleable);
+        // sphere cast to detect grappleable objects
+        RaycastHit[] hits = Physics.SphereCastAll(cam.position, 10f, cam.forward, maxGrappleDistance, whatIsGrappleable);
 
         foreach (var hit in hits)
         {
-            // Check if the object is within the camera's frustum
             if (GeometryUtility.TestPlanesAABB(frustumPlanes, hit.collider.bounds))
             {
                 grapplePoint = hit.point;
-                break; // Start swinging with the first valid hit
+                break;
             }
         }
     }
     void ExecuteGrappel()
     {
-        pm.freeze = false;    
+        pm.freeze = false;  
+
 
         myThirdPersonCamController.SwitchCameraStyle(ThirdPersonCam.CameraStyle.Swinging);
 
@@ -140,5 +142,12 @@ public class Grappling : MonoBehaviour
         grapplingCooldownTimer = grapplingCooldown;
 
         lr.positionCount = 0;
+    }
+
+    private void OnDrawGizmos() 
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(cam.position, 10f);
+        Gizmos.DrawWireSphere(cam.position + cam.forward * maxGrappleDistance,10f);
     }
 }

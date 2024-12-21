@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
+using TMPro;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -13,6 +14,8 @@ public class PlayerMovement : MonoBehaviour
     public float sprintSpeed;
     public float wallRunSpeed;
     public float swingSpeed;
+
+    public float slidingSpeed;
     public float groundDrag;
     
     [Header("Jump")]
@@ -37,6 +40,14 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask whatIsGround;
     bool grounded;
     public Transform orientation;
+
+    [Header("Slope Handling")]
+
+    public float maxSlopeAngle;
+    private RaycastHit slopeHit;
+
+    private bool exitingSlope;
+
     
     float horizontalInput;
     float verticalInput;
@@ -44,6 +55,8 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 moveDirection;
     
     Rigidbody rb;
+
+    [Header("Debugging")]
     
     public MovementState state;
 
@@ -55,6 +68,7 @@ public class PlayerMovement : MonoBehaviour
         wallrunning,
         crouching,
         freeze, 
+        sliding,
         air 
     };
 
@@ -62,6 +76,7 @@ public class PlayerMovement : MonoBehaviour
     public bool swinging;
     public bool freeze;
     public bool activeGrapple;
+    public bool sliding;
     LayerMask wallRunningLayer;
 
     float startingMass;
@@ -69,6 +84,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 velocityToSet;
     private bool enableMovementOnNextTouch;
 
+    public TextMeshProUGUI stateText;
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -93,11 +109,27 @@ public class PlayerMovement : MonoBehaviour
         else
             rb.drag = 0;
 
+        stateText.text = state.ToString();
     }
 
     void FixedUpdate()
     {
         MovePlayer();
+    }
+
+    bool OnSlope()
+    {
+        if(Physics.Raycast(transform.position, Vector3.down, out slopeHit, playerHeight * 0.5f+ 0.3f))
+        {
+            float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
+            return angle< maxSlopeAngle && angle!=0; 
+        }
+        return false;
+    }
+
+    private Vector3 GetSlopeMovementDirection()
+    {
+        return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal).normalized;
     }
     private void MyInput()
     {
@@ -125,11 +157,17 @@ public class PlayerMovement : MonoBehaviour
 
     private void StateMachine()
     {
-        if(freeze)
+        if(sliding)
+        {
+            state = MovementState.sliding;
+            moveSpeed = slidingSpeed;
+        }
+        else if(freeze)
         {
             state = MovementState.freeze;
             moveSpeed = 0;
             rb.velocity = Vector3.zero;
+            wallrunning = false;
         }
         else if(wallrunning)
         {
@@ -158,12 +196,13 @@ public class PlayerMovement : MonoBehaviour
             state = MovementState.walking;
             moveSpeed = walkSpeed;
         }
-        else
+        else if(!activeGrapple)
         {
             state = MovementState.air;
         }
 
-        //After doing the on slope thing change rb.useGravity = !OnSlope add condition (!wallrunning)
+        if(!wallrunning)
+            rb.useGravity = !OnSlope();
     }
     private void MovePlayer()
     {
@@ -171,6 +210,15 @@ public class PlayerMovement : MonoBehaviour
         if(swinging)return;
 
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+
+        // if player iss standing on a slope
+        if(OnSlope())
+        {
+            rb.AddForce(GetSlopeMovementDirection() * moveSpeed * 20f, ForceMode.Force);
+
+            if(rb.velocity.y>0)
+                rb.AddForce(Vector3.down * 80f, ForceMode.Force);
+        }
         
         if(grounded)
             rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
@@ -182,17 +230,28 @@ public class PlayerMovement : MonoBehaviour
     {
         if(activeGrapple) return;
 
-        Vector3 flatVel = new Vector3(rb.velocity.x, 0, rb.velocity.z);
-
-        if (flatVel.magnitude > moveSpeed)
+        // onslope speed control
+        if(OnSlope() && !exitingSlope)
         {
-            Vector3 limitVel = flatVel.normalized * moveSpeed;
-            rb.velocity = new Vector3(limitVel.x, rb.velocity.y, limitVel.z);
+            if(rb.velocity.magnitude > moveSpeed)
+                rb.velocity = rb.velocity.normalized * moveSpeed;
         }
+        else
+        {
+            Vector3 flatVel = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+
+            if (flatVel.magnitude > moveSpeed)
+            {
+                Vector3 limitVel = flatVel.normalized * moveSpeed;
+                rb.velocity = new Vector3(limitVel.x, rb.velocity.y, limitVel.z);
+            }            
+        }
+
     }
 
     private void Jump()
     {
+        exitingSlope = true;
         rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
         rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
     }
@@ -200,6 +259,7 @@ public class PlayerMovement : MonoBehaviour
     private void ResetJump()
     {
         readyToJump = true;
+        exitingSlope = false;
     }
 
     public void JumpToPosition(Vector3 targetPosition, float trajectoryHeight)
@@ -224,7 +284,7 @@ public class PlayerMovement : MonoBehaviour
         float displacementY = endPoint.y - startPoint.y;
         Vector3 displacementeXZ = new Vector3(endPoint.x - startPoint.x, 0f, endPoint.z - startPoint.z);
 
-        Vector3 velocityY = Vector3.up * Mathf.Sqrt(-2 * trajectoryHeight * gravity);
+        Vector3 velocityY = Vector3.up * Mathf.Sqrt(-2 *  gravity * trajectoryHeight );
         Vector3 velocityXZ = displacementeXZ / (Mathf.Sqrt(-2 * trajectoryHeight / gravity)
             + Mathf.Sqrt(2 * (displacementY - trajectoryHeight) / gravity));
 
@@ -237,7 +297,7 @@ public class PlayerMovement : MonoBehaviour
         {
             enableMovementOnNextTouch = false;
             ResetRestriction();
-            
+
             GetComponent<Grappling>().StopGrapple();
         }
     }
