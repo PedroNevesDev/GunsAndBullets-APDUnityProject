@@ -9,13 +9,17 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")] 
     private float moveSpeed;
-
     public float walkSpeed;
     public float sprintSpeed;
     public float wallRunSpeed;
     public float swingSpeed;
+    public float slideSpeed;
 
-    public float slidingSpeed;
+    private float desiredMoveSpeed;
+    private float lastDesiredMoveSpeed;
+
+    public float speedIncreaseMultiplier;
+    public float slopeIncreaseMultiplier;
     public float groundDrag;
     
     [Header("Jump")]
@@ -117,19 +121,20 @@ public class PlayerMovement : MonoBehaviour
         MovePlayer();
     }
 
-    bool OnSlope()
+    public bool OnSlope()
     {
         if(Physics.Raycast(transform.position, Vector3.down, out slopeHit, playerHeight * 0.5f+ 0.3f))
         {
+            print("slope");
             float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
             return angle< maxSlopeAngle && angle!=0; 
         }
         return false;
     }
 
-    private Vector3 GetSlopeMovementDirection()
+    public Vector3 GetSlopeMovementDirection(Vector3 direction)
     {
-        return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal).normalized;
+        return Vector3.ProjectOnPlane(direction, slopeHit.normal).normalized;
     }
     private void MyInput()
     {
@@ -160,41 +165,45 @@ public class PlayerMovement : MonoBehaviour
         if(sliding)
         {
             state = MovementState.sliding;
-            moveSpeed = slidingSpeed;
+
+            if(OnSlope() && rb.velocity.y < 0.1f)
+                desiredMoveSpeed = slideSpeed;
+            else
+                desiredMoveSpeed = sprintSpeed;
         }
         else if(freeze)
         {
             state = MovementState.freeze;
-            moveSpeed = 0;
+            desiredMoveSpeed = 0;
             rb.velocity = Vector3.zero;
             wallrunning = false;
         }
         else if(wallrunning)
         {
             state = MovementState.wallrunning;
-            moveSpeed = wallRunSpeed;
+            desiredMoveSpeed = wallRunSpeed;
         }
         else if(swinging)
         {
             state = MovementState.swinging;
-            moveSpeed = swingSpeed;
+            desiredMoveSpeed = swingSpeed;
         }
 
         else if (Input.GetKeyDown(crouchKey))
         {
             state = MovementState.crouching;
-            moveSpeed = crouchSpeed;
+            desiredMoveSpeed = crouchSpeed;
         }
         
         else if (grounded && Input.GetKey(sprintKey))
         {
             state = MovementState.sprinting;
-            moveSpeed = sprintSpeed;
+            desiredMoveSpeed = sprintSpeed;
         }
         else if (grounded)
         {
             state = MovementState.walking;
-            moveSpeed = walkSpeed;
+            desiredMoveSpeed = walkSpeed;
         }
         else if(!activeGrapple)
         {
@@ -203,6 +212,18 @@ public class PlayerMovement : MonoBehaviour
 
         if(!wallrunning)
             rb.useGravity = !OnSlope();
+
+        if(Mathf.Abs(desiredMoveSpeed - lastDesiredMoveSpeed) > 4f && moveSpeed != 0)
+        {
+            StopAllCoroutines();
+            StartCoroutine(SmoothlyLerpMoveSpeed());
+        }
+        else
+        {
+            moveSpeed = desiredMoveSpeed;
+        }
+
+        lastDesiredMoveSpeed = desiredMoveSpeed;
     }
     private void MovePlayer()
     {
@@ -214,9 +235,9 @@ public class PlayerMovement : MonoBehaviour
         // if player iss standing on a slope
         if(OnSlope())
         {
-            rb.AddForce(GetSlopeMovementDirection() * moveSpeed * 20f, ForceMode.Force);
+            rb.AddForce(GetSlopeMovementDirection(moveDirection) * moveSpeed * 20f, ForceMode.Force);
 
-            if(rb.velocity.y>0)
+            if(rb.velocity.y<0)
                 rb.AddForce(Vector3.down * 80f, ForceMode.Force);
         }
         
@@ -305,6 +326,30 @@ public class PlayerMovement : MonoBehaviour
     void ResetRestriction()
     {
         activeGrapple = false;
+    }
+    private IEnumerator SmoothlyLerpMoveSpeed()
+    {
+        float time = 0;
+        float difference = Mathf.Abs(desiredMoveSpeed - moveSpeed);
+        float startValue = moveSpeed;
+
+        while (time < difference)
+        {
+            moveSpeed = Mathf.Lerp(startValue, desiredMoveSpeed, time / difference);
+            if(OnSlope())
+            {
+                float slopeAngle = Vector3.Angle(Vector3.up, slopeHit.normal);
+                float slopeAngleIncrease = 1 + (slopeAngle / 90f);
+
+                time += Time.deltaTime * speedIncreaseMultiplier * slopeIncreaseMultiplier * slopeAngleIncrease; 
+            }
+            else 
+                time += Time.deltaTime * speedIncreaseMultiplier;
+
+            yield return null;
+        }
+
+        moveSpeed = desiredMoveSpeed;
     }
 
     private void OnDrawGizmos()

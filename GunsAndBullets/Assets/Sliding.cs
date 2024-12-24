@@ -37,8 +37,6 @@ public class Sliding : MonoBehaviour
 
     private void StartSlide()
     {
-        if(horizontalInput==0 && verticalInput==0) return;
-
         pm.sliding = true;
 
         playerMesh.localScale = new Vector3(playerMesh.localScale.x,slideYScale, playerMesh.localScale.z);
@@ -49,8 +47,6 @@ public class Sliding : MonoBehaviour
 
     private void StopSlide()
     {
-        if(!pm.sliding) return;
-
         pm.sliding = false;
 
         playerMesh.localScale = new Vector3(playerMesh.localScale.x,startYScale, playerMesh.localScale.z);
@@ -58,15 +54,22 @@ public class Sliding : MonoBehaviour
 
     private void SlidingMovement()
     {
-        if(!pm.sliding) return;
+        Vector3 inputDirection  = orientation.forward * verticalInput + orientation.right * horizontalInput;
+        
+        if(!pm.OnSlope() || rb.velocity.y >-0.1f)
+        {
+            rb.AddForce(inputDirection.normalized * slideForce,ForceMode.Force);
 
-        Vector3 inputDireaction  = orientation.forward * verticalInput + orientation.right * horizontalInput;
+            slideTimer -= Time.fixedDeltaTime;            
+        }
+        // apply force in the slope direction for better sliding downwards, also not counting the time makes it for that you can slide down a slope as long as you want
+        else
+        {
+            rb.AddForce(pm.GetSlopeMovementDirection(inputDirection) * slideForce,ForceMode.Force);
+        }
 
-        rb.AddForce(inputDireaction.normalized * slideForce,ForceMode.Force);
-
-        slideTimer -= Time.fixedDeltaTime;
-
-        if(slideTimer <= 0) StopSlide();
+        if(slideTimer <= 0) 
+            StopSlide();
     }
 
     // Update is called once per frame
@@ -75,12 +78,13 @@ public class Sliding : MonoBehaviour
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
 
-        if(Input.GetKeyDown(slideKey)) StartSlide();
-        if(Input.GetKeyUp(slideKey)) StopSlide();
+        if(Input.GetKeyDown(slideKey) && (horizontalInput != 0 || verticalInput !=0)) StartSlide();
+        if(Input.GetKeyUp(slideKey) && pm.sliding) StopSlide();
     }
 
     void FixedUpdate()
     {
-        SlidingMovement();
+        if(pm.sliding)
+            SlidingMovement();
     }
 }
