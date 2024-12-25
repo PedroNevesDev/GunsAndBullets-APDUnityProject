@@ -965,7 +965,7 @@ Transform:
   m_GameObject: {fileID: 208917329}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -23.10841, y: -32.8, z: 39.231613}
+  m_LocalPosition: {x: -23.10841, y: -61, z: 39.231613}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1991,7 +1991,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 525108243}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.04498833, y: -0.000000019248212, z: 0.0000000027184535, w: 0.99898756}
+  m_LocalRotation: {x: 0.04498833, y: 0.0000000148263934, z: -0.0000000020939535, w: 0.99898756}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -2699,7 +2699,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 627071769}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.091372184, y: -0.0000000021940096, z: 4.146751e-10, w: 0.9958169}
+  m_LocalRotation: {x: 0.09137219, y: -0.0000000021940094, z: 4.146751e-10, w: 0.9958168}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -3723,7 +3723,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 853848606}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.0000000037252903, y: -8.1683105e-11, z: 7.808053e-12, w: 1}
+  m_LocalRotation: {x: -0.0000000037252903, y: -0.000000004363759, z: 4.171299e-10, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -4505,7 +4505,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.04763198, y: 0.0000000021483566, z: -1.02446746e-10, w: 0.99886495}
+  m_LocalRotation: {x: 0.04763198, y: -0.0000000021483566, z: 1.02446746e-10, w: 0.99886495}
   m_LocalPosition: {x: 0, y: 2, z: -7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -5479,7 +5479,7 @@ MonoBehaviour:
   walkSpeed: 10
   sprintSpeed: 20
   wallRunSpeed: 10
-  swingSpeed: 22
+  swingSpeed: 18
   slideSpeed: 30
   climbSpeed: 3
   speedIncreaseMultiplier: 1.5
@@ -5561,7 +5561,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   pm: {fileID: 0}
-  maxSwingDistance: 20
+  maxSwingDistance: 13
   swingCanvas: {fileID: 47696456}
   orientation: {fileID: 1336534476}
   rb: {fileID: 0}
