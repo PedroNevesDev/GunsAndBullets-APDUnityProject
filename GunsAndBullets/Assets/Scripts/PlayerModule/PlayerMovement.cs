@@ -15,6 +15,8 @@ public class PlayerMovement : MonoBehaviour
     public float swingSpeed;
     public float slideSpeed;
 
+    public float climbSpeed;
+
     private float desiredMoveSpeed;
     private float lastDesiredMoveSpeed;
 
@@ -42,7 +44,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Ground Check")]
     public float playerHeight;
     public LayerMask whatIsGround;
-    bool grounded;
+    public bool grounded;
     public Transform orientation;
 
     [Header("Slope Handling")]
@@ -73,6 +75,7 @@ public class PlayerMovement : MonoBehaviour
         crouching,
         freeze, 
         sliding,
+        climbing,
         air 
     };
 
@@ -81,7 +84,7 @@ public class PlayerMovement : MonoBehaviour
     public bool freeze;
     public bool activeGrapple;
     public bool sliding;
-    LayerMask wallRunningLayer;
+    public bool climbing;
 
     float startingMass;
 
@@ -89,8 +92,11 @@ public class PlayerMovement : MonoBehaviour
     private bool enableMovementOnNextTouch;
 
     public TextMeshProUGUI stateText;
+
+    Climbing climbingScript;
     void Start()
     {
+        climbingScript = GetComponent<Climbing>();
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         
@@ -102,7 +108,7 @@ public class PlayerMovement : MonoBehaviour
     }
     void Update()
     {
-        grounded = Physics.Raycast(transform.position,Vector3.down, playerHeight * 0.5f+0.2f, whatIsGround);
+        grounded = Physics.Raycast(transform.position,Vector3.down, playerHeight * 0.5f+0.2f);
         
         MyInput();
         SpeedControl();
@@ -162,7 +168,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void StateMachine()
     {
-        if(sliding)
+        if(climbing)
+        {
+            state = MovementState.climbing;
+            desiredMoveSpeed = climbSpeed;
+        }
+        else if(sliding)
         {
             state = MovementState.sliding;
 
@@ -213,7 +224,7 @@ public class PlayerMovement : MonoBehaviour
         if(!wallrunning)
             rb.useGravity = !OnSlope();
 
-        if(Mathf.Abs(desiredMoveSpeed - lastDesiredMoveSpeed) > 4f && moveSpeed != 0)
+        if(Mathf.Abs(desiredMoveSpeed - lastDesiredMoveSpeed) > 10f && moveSpeed != 0)
         {
             StopAllCoroutines();
             StartCoroutine(SmoothlyLerpMoveSpeed());
@@ -227,6 +238,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private void MovePlayer()
     {
+        if(climbingScript != null && climbingScript.exitingWall) return;
         if(activeGrapple) return;
         if(swinging)return;
 
