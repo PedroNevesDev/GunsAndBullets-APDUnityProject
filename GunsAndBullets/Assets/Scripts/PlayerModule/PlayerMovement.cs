@@ -76,6 +76,7 @@ public class PlayerMovement : MonoBehaviour
         freeze, 
         sliding,
         climbing,
+        grappliing,
         air 
     };
 
@@ -168,7 +169,18 @@ public class PlayerMovement : MonoBehaviour
 
     private void StateMachine()
     {
-        if(climbing)
+        if(freeze)
+        {
+            state = MovementState.freeze;
+            desiredMoveSpeed = 0;
+            rb.velocity = Vector3.zero;
+        }
+        else if(activeGrapple)
+        {
+            state = MovementState.grappliing;
+            desiredMoveSpeed = sprintSpeed;
+        }
+        else if(climbing)
         {
             state = MovementState.climbing;
             desiredMoveSpeed = climbSpeed;
@@ -181,13 +193,6 @@ public class PlayerMovement : MonoBehaviour
                 desiredMoveSpeed = slideSpeed;
             else
                 desiredMoveSpeed = sprintSpeed;
-        }
-        else if(freeze)
-        {
-            state = MovementState.freeze;
-            desiredMoveSpeed = 0;
-            rb.velocity = Vector3.zero;
-            wallrunning = false;
         }
         else if(wallrunning)
         {
@@ -216,7 +221,7 @@ public class PlayerMovement : MonoBehaviour
             state = MovementState.walking;
             desiredMoveSpeed = walkSpeed;
         }
-        else if(!activeGrapple)
+        else
         {
             state = MovementState.air;
         }
@@ -308,6 +313,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private void SetVelocity()
     {
+        rb.velocity = Vector3.zero;
         enableMovementOnNextTouch = true;
         rb.velocity = velocityToSet;
     }

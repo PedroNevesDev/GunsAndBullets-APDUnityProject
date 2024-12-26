@@ -23,11 +23,17 @@ public class WallRunning : MonoBehaviour
     private bool downwardsRunning;
     private float horizontalInput;
     private float verticalInput;
+
+    [Header("Jump")]
+    public float jumpGraceTime;
+    private float jumpGraceTimer;
     [Header("Detection")]
     public float wallCheckDistance;
     public float minJumpHeight;
     private RaycastHit leftWallhit;
+    private RaycastHit oldLeft;
     private RaycastHit rightWallhit;
+    private RaycastHit oldRight;
     private bool wallLeft;
     private bool wallRight;
     [Header("Exiting")]
@@ -43,6 +49,8 @@ public class WallRunning : MonoBehaviour
     public Transform orientation;
     private PlayerMovement pm;
     private Rigidbody rb;
+
+    bool jump;
 
     // Start is called before the first frame update
     void Start()
@@ -65,10 +73,19 @@ public class WallRunning : MonoBehaviour
     {
         if(pm.wallrunning)
             WallRunningMovement();
+
+        if(jump)
+            WallJump();
     }
 
     private void CheckForWall()
     {
+        if(leftWallhit.collider != null)
+            oldLeft = leftWallhit;
+        if(rightWallhit.collider != null)
+            oldRight = rightWallhit; 
+
+        
         wallRight = Physics.Raycast(transform.position, orientation.right, out rightWallhit, wallCheckDistance, whatIsWall);
         wallLeft = Physics.Raycast(transform.position, -orientation.right, out leftWallhit, wallCheckDistance, whatIsWall);
     }
@@ -99,7 +116,7 @@ public class WallRunning : MonoBehaviour
                 print("TimeOut");
             }
 
-            if(Input.GetKeyDown(jumpKey)) WallJump();
+            jumpGraceTimer = jumpGraceTime;
         }
         else if(exitingWall)
         {
@@ -110,12 +127,17 @@ public class WallRunning : MonoBehaviour
             if(exitWallTimer<=0)
                 exitingWall = false;
             if(wallLeft || wallRight) {exitWallTimer = exitWallTime;}
+            
+            if(jumpGraceTimer>0)
+                jumpGraceTimer-=Time.deltaTime;
         }
         else
         {
             if(pm.wallrunning)
                 StopWallRun();
         }
+        if(Input.GetKeyDown(jumpKey)&&jumpGraceTimer>0)jump = true;
+
     }
 
     private void StartWallRun()
@@ -160,9 +182,17 @@ public class WallRunning : MonoBehaviour
 
     private void WallJump()
     {
+        jump = false;
         exitingWall = true;
         exitWallTimer = exitWallTime;
-        Vector3 wallNormal = wallRight ? rightWallhit.normal : leftWallhit.normal;
+        jumpGraceTimer = 0;
+        exitWallTimer=0;
+        Vector3 wallNormal;
+
+        if(wallRight || wallLeft)
+            wallNormal = wallRight? rightWallhit.normal : leftWallhit.normal;
+        else
+            wallNormal = oldLeft.collider!=null? oldLeft.normal : oldRight.normal;
 
         Vector3 forceToApply = transform.up * wallJumpUpForce + wallNormal * wallJumpSideForce;
 

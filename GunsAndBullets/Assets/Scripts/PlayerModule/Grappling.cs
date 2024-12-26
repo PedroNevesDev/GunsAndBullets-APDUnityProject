@@ -117,7 +117,6 @@ public class Grappling : MonoBehaviour
     {
         pm.freeze = false;  
 
-
         myThirdPersonCamController.SwitchCameraStyle(ThirdPersonCam.CameraStyle.Swinging);
 
         Vector3 lowestPoint = new Vector3(transform.position.x, transform.position.y - 1f, transform.position.z);
