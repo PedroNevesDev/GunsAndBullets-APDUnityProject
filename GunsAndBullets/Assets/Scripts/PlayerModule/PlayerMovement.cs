@@ -35,6 +35,8 @@ public class PlayerMovement : MonoBehaviour
 
     public float crouchYScale;
     private float startYScale;
+
+    public LayerMask ignorePlayerMask;
     
     [Header("Keybinds")]
     public KeyCode jumpKey = KeyCode.Space;
@@ -76,7 +78,7 @@ public class PlayerMovement : MonoBehaviour
         freeze, 
         sliding,
         climbing,
-        grappliing,
+        grappling,
         air 
     };
 
@@ -95,6 +97,8 @@ public class PlayerMovement : MonoBehaviour
     public TextMeshProUGUI stateText;
 
     Climbing climbingScript;
+
+    public bool shouldReturnToInitalSize;
     void Start()
     {
         climbingScript = GetComponent<Climbing>();
@@ -120,6 +124,11 @@ public class PlayerMovement : MonoBehaviour
         else
             rb.drag = 0;
 
+        if(shouldReturnToInitalSize && CheckForSizeObstacle((startYScale-crouchYScale)*2))
+        {
+            shouldReturnToInitalSize = false;
+            ChangeScale(startYScale);
+        }
         stateText.text = state.ToString();
     }
 
@@ -156,17 +165,23 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetKeyDown(crouchKey))
         {
-            transform.localScale = new Vector3(transform.localScale.x  , crouchYScale, transform.localScale.z);
+            ChangeScale(crouchYScale);
             rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
         }
         
         if (Input.GetKeyUp(crouchKey))
         {
-            transform.localScale = new Vector3(transform.localScale.x  , startYScale, transform.localScale.z);
-            rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
+            shouldReturnToInitalSize = true;            
         }
     }
-
+    public bool CheckForSizeObstacle(float distance)
+    {
+        return !Physics.SphereCast(transform.position,0.5f,Vector3.up,out RaycastHit intotheabyssinfo,distance,~ignorePlayerMask);
+    }
+    public void ChangeScale(float YScale)
+    {
+        transform.localScale = new Vector3(transform.localScale.x  , YScale, transform.localScale.z);
+    }
     private void StateMachine()
     {
         if(freeze)
@@ -177,7 +192,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else if(activeGrapple)
         {
-            state = MovementState.grappliing;
+            state = MovementState.grappling;
             desiredMoveSpeed = sprintSpeed;
         }
         else if(climbing)
@@ -205,7 +220,7 @@ public class PlayerMovement : MonoBehaviour
             desiredMoveSpeed = swingSpeed;
         }
 
-        else if (Input.GetKeyDown(crouchKey))
+        else if (Input.GetKey(crouchKey))
         {
             state = MovementState.crouching;
             desiredMoveSpeed = crouchSpeed;
@@ -229,7 +244,7 @@ public class PlayerMovement : MonoBehaviour
         if(!wallrunning)
             rb.useGravity = !OnSlope();
 
-        if(Mathf.Abs(desiredMoveSpeed - lastDesiredMoveSpeed) > 6f && moveSpeed != 0)
+        if(Mathf.Abs(desiredMoveSpeed - lastDesiredMoveSpeed) > 4f && moveSpeed != 0)
         {
             StopAllCoroutines();
             StartCoroutine(SmoothlyLerpMoveSpeed());

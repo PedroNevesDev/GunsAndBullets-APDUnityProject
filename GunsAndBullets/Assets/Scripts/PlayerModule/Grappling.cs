@@ -17,6 +17,7 @@ public class Grappling : MonoBehaviour
     public float maxGrappleDistance;
     public float grappleDelayTime;
     public float overshootYAxis;
+    public float detectionRadius;
 
     private Vector3 grapplePoint;
 
@@ -29,6 +30,9 @@ public class Grappling : MonoBehaviour
 
     private bool grappling;
 
+    public GameObject displayGrapplePointCanvas;
+    RaycastHit hit;
+
     private void Start()
     {
         pm = GetComponent<PlayerMovement>();
@@ -36,7 +40,16 @@ public class Grappling : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(grappleKey)&&pm.state == PlayerMovement.MovementState.air) StartGrapple();
+        if(pm.state == PlayerMovement.MovementState.air)
+        {
+            CheckForGrappleablePoint();
+            if (Input.GetKeyDown(grappleKey)) 
+                StartGrapple();
+        }
+        else
+        {
+            displayGrapplePointCanvas.SetActive(false);
+        }
 
         if (grapplingCdTimer > 0)
             grapplingCdTimer -= Time.deltaTime;
@@ -47,7 +60,19 @@ public class Grappling : MonoBehaviour
         if (grappling)
            lr.SetPosition(0, gunTip.position);
     }
-
+    
+    void CheckForGrappleablePoint()
+    {
+        if(Physics.SphereCast(cam.position, detectionRadius,cam.forward, out hit, maxGrappleDistance,~ignorePlayerLayer))
+        {
+            displayGrapplePointCanvas.transform.position = hit.point;
+            displayGrapplePointCanvas.SetActive(true);
+        }
+        else
+        {
+            displayGrapplePointCanvas.SetActive(false);
+        }
+    }
     private void StartGrapple()
     {
         if (grapplingCdTimer > 0) return;
@@ -56,17 +81,14 @@ public class Grappling : MonoBehaviour
 
         pm.freeze = true;
 
-        RaycastHit hit;
-        if(Physics.Raycast(cam.position, cam.forward, out hit, maxGrappleDistance,~ignorePlayerLayer))
+        if(hit.collider!=null)
         {
             grapplePoint = hit.point;
-
             Invoke(nameof(ExecuteGrapple), grappleDelayTime);
         }
         else
         {
             grapplePoint = cam.position + cam.forward * maxGrappleDistance;
-
             Invoke(nameof(StopGrapple), grappleDelayTime);
         }
 

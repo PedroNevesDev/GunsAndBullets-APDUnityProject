@@ -11,6 +11,8 @@ public class Sliding : MonoBehaviour
     private Rigidbody rb;
     private PlayerMovement pm;
 
+    public LayerMask ignorePlayerLayer;
+
     [Header("Sliding")]
     public float maxSlideTime;
     public float slideForce;
@@ -25,7 +27,6 @@ public class Sliding : MonoBehaviour
     private float horizontalInput;
     private float verticalInput;
 
-    private bool sliding;
     // Start is called before the first frame update
     void Start()
     {
@@ -39,17 +40,19 @@ public class Sliding : MonoBehaviour
     {
         pm.sliding = true;
 
-        playerMesh.localScale = new Vector3(playerMesh.localScale.x,slideYScale, playerMesh.localScale.z);
+        pm.ChangeScale(slideYScale);
+
         rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
 
         slideTimer = maxSlideTime;
+        print("Tries To Slide");
     }
 
     private void StopSlide()
     {
         pm.sliding = false;
 
-        playerMesh.localScale = new Vector3(playerMesh.localScale.x,startYScale, playerMesh.localScale.z);
+        pm.shouldReturnToInitalSize = true;
     }
 
     private void SlidingMovement()

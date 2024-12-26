@@ -31,7 +31,7 @@ public class InputUIUpdater : MonoBehaviour
             {
                 case PlayerMovement.MovementState.air:
                 inputText.text = "WASD - Direction";
-                if(grappling && (pm.state != PlayerMovement.MovementState.grappliing|| pm.state != PlayerMovement.MovementState.freeze))
+                if(grappling && (pm.state != PlayerMovement.MovementState.grappling|| pm.state != PlayerMovement.MovementState.freeze))
                     inputText.text+= "\nRMB - To Grapple";
                 break;
 
@@ -40,7 +40,7 @@ public class InputUIUpdater : MonoBehaviour
                 break;
 
                 case PlayerMovement.MovementState.crouching:
-                inputText.text = "WASD - Direction";
+                inputText.text = "WASD - Direction\nSpace - Jump";
 
                 break;
 
@@ -56,7 +56,7 @@ public class InputUIUpdater : MonoBehaviour
                 inputText.text = "W,A and D - Direction\nS - Reel It Out\nSpace - Reel It IN";
                 break;
 
-                case PlayerMovement.MovementState.grappliing:
+                case PlayerMovement.MovementState.grappling:
                 inputText.text = "";
                 break;
 
