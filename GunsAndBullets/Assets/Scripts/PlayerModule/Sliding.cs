@@ -51,8 +51,6 @@ public class Sliding : MonoBehaviour
     private void StopSlide()
     {
         pm.sliding = false;
-
-        pm.shouldReturnToInitalSize = true;
     }
 
     private void SlidingMovement()

@@ -36,7 +36,7 @@ public class InputUIUpdater : MonoBehaviour
                 break;
 
                 case PlayerMovement.MovementState.walking:
-                inputText.text = "WASD - Direction\nSpace - Jump";
+                inputText.text = "WASD - Direction\nSpace - Jump\nCTRL - Crouching/Slide";
                 break;
 
                 case PlayerMovement.MovementState.crouching:

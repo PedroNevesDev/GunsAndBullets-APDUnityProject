@@ -13,7 +13,7 @@ public class PlayerMovement : MonoBehaviour
     public float sprintSpeed;
     public float wallRunSpeed;
     public float swingSpeed;
-    public float slideSpeed;
+
 
     public float climbSpeed;
 
@@ -37,6 +37,10 @@ public class PlayerMovement : MonoBehaviour
     private float startYScale;
 
     public LayerMask ignorePlayerMask;
+
+    [Header("Sliding")]
+    public float slideSpeed;
+    public float slideYScale;
     
     [Header("Keybinds")]
     public KeyCode jumpKey = KeyCode.Space;
@@ -98,7 +102,6 @@ public class PlayerMovement : MonoBehaviour
 
     Climbing climbingScript;
 
-    public bool shouldReturnToInitalSize;
     void Start()
     {
         climbingScript = GetComponent<Climbing>();
@@ -123,12 +126,6 @@ public class PlayerMovement : MonoBehaviour
             rb.drag = groundDrag;
         else
             rb.drag = 0;
-
-        if(shouldReturnToInitalSize && CheckForSizeObstacle((startYScale-crouchYScale)*2))
-        {
-            shouldReturnToInitalSize = false;
-            ChangeScale(startYScale);
-        }
         stateText.text = state.ToString();
     }
 
@@ -162,17 +159,6 @@ public class PlayerMovement : MonoBehaviour
             Jump();
             Invoke(nameof(ResetJump), jumpCooldown);
         }
-
-        if (Input.GetKeyDown(crouchKey))
-        {
-            ChangeScale(crouchYScale);
-            rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
-        }
-        
-        if (Input.GetKeyUp(crouchKey))
-        {
-            shouldReturnToInitalSize = true;            
-        }
     }
     public bool CheckForSizeObstacle(float distance)
     {
@@ -200,15 +186,6 @@ public class PlayerMovement : MonoBehaviour
             state = MovementState.climbing;
             desiredMoveSpeed = climbSpeed;
         }
-        else if(sliding)
-        {
-            state = MovementState.sliding;
-
-            if(OnSlope() && rb.velocity.y < 0.1f)
-                desiredMoveSpeed = slideSpeed;
-            else
-                desiredMoveSpeed = sprintSpeed;
-        }
         else if(wallrunning)
         {
             state = MovementState.wallrunning;
@@ -220,21 +197,35 @@ public class PlayerMovement : MonoBehaviour
             desiredMoveSpeed = swingSpeed;
         }
 
-        else if (Input.GetKey(crouchKey))
-        {
-            state = MovementState.crouching;
-            desiredMoveSpeed = crouchSpeed;
-        }
-        
-        else if (grounded && Input.GetKey(sprintKey))
-        {
-            state = MovementState.sprinting;
-            desiredMoveSpeed = sprintSpeed;
-        }
         else if (grounded)
         {
-            state = MovementState.walking;
-            desiredMoveSpeed = walkSpeed;
+            if(sliding)
+            {
+                state = MovementState.sliding;
+
+                if(OnSlope() && rb.velocity.y < 0.1f)
+                    desiredMoveSpeed = slideSpeed;
+                else
+                    desiredMoveSpeed = sprintSpeed;
+                ChangeScale(slideYScale);
+            }
+            else if(Input.GetKey(crouchKey))
+            {
+                state = MovementState.crouching;
+                desiredMoveSpeed = crouchSpeed;
+                ChangeScale(crouchYScale);
+            }
+            else if(Input.GetKey(sprintKey))
+            {
+                state = MovementState.sprinting;
+                desiredMoveSpeed = sprintSpeed;
+            }
+            else
+            {
+                state = MovementState.walking;
+                desiredMoveSpeed = walkSpeed;
+            }
+
         }
         else
         {
@@ -255,6 +246,9 @@ public class PlayerMovement : MonoBehaviour
         }
 
         lastDesiredMoveSpeed = desiredMoveSpeed;
+
+        if(state!=MovementState.crouching && state!=MovementState.sliding && CheckForSizeObstacle((startYScale-transform.localScale.y)*2))
+            ChangeScale(startYScale);
     }
     private void MovePlayer()
     {
