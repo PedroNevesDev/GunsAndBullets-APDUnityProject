@@ -17,7 +17,7 @@ public class Grappling : MonoBehaviour
     public float grappleDelayTime;
     public float overshootYAxis;
     public GrappleUI grappleCanvas;
-    private Vector3 grapplePoint;
+    public Vector3 grapplePoint;
 
     [Header("Cooldown")]
     public float grapplingCooldown;

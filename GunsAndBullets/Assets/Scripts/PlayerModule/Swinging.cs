@@ -15,7 +15,7 @@ public class Swinging : MonoBehaviour
 
     [Header("Swinging")]
     public float maxSwingDistance = 25f;
-    private Vector3 swingPoint = Vector3.zero;
+    public Vector3 swingPoint = Vector3.zero;
     private SpringJoint joint;
 
     public GrappleUI swingCanvas;
