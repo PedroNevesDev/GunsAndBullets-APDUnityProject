@@ -31,6 +31,8 @@ public class InputUIUpdater : MonoBehaviour
             {
                 case PlayerMovement.MovementState.air:
                 inputText.text = "WASD - Direction";
+                if(grappling && (pm.state != PlayerMovement.MovementState.grappliing|| pm.state != PlayerMovement.MovementState.freeze))
+                    inputText.text+= "\nRMB - To Grapple";
                 break;
 
                 case PlayerMovement.MovementState.walking:
@@ -78,8 +80,6 @@ public class InputUIUpdater : MonoBehaviour
         {
             extraText = "\nLMB - To Swing";
         }
-        else if(grappling && (pm.state != PlayerMovement.MovementState.grappliing|| pm.state != PlayerMovement.MovementState.freeze))
-            extraText = "\nRMB - To Grapple";
         
         inputText.text+=extraText;
     }

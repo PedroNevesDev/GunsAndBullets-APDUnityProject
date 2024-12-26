@@ -314,6 +314,7 @@ public class PlayerMovement : MonoBehaviour
     private void SetVelocity()
     {
         rb.velocity = Vector3.zero;
+        moveSpeed = sprintSpeed;
         enableMovementOnNextTouch = true;
         rb.velocity = velocityToSet;
     }
