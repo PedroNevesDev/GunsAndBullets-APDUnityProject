@@ -8,7 +8,7 @@ public class Grappling : MonoBehaviour
     [Header("References")]
     private PlayerMovement pm;
     public Transform cam;
-    public Transform gunTip;
+    public Transform origin;
     public LineRenderer lr;
 
     public LayerMask ignorePlayerLayer;
@@ -58,7 +58,7 @@ public class Grappling : MonoBehaviour
     private void LateUpdate()
     {
         if (grappling)
-           lr.SetPosition(0, gunTip.position);
+           lr.SetPosition(0, origin.position);
     }
     
     void CheckForGrappleablePoint()
