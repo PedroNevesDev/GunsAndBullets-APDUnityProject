@@ -229,7 +229,7 @@ public class PlayerMovement : MonoBehaviour
         if(!wallrunning)
             rb.useGravity = !OnSlope();
 
-        if(Mathf.Abs(desiredMoveSpeed - lastDesiredMoveSpeed) > 10f && moveSpeed != 0)
+        if(Mathf.Abs(desiredMoveSpeed - lastDesiredMoveSpeed) > 6f && moveSpeed != 0)
         {
             StopAllCoroutines();
             StartCoroutine(SmoothlyLerpMoveSpeed());

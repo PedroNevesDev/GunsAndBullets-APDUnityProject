@@ -73,14 +73,13 @@ public class InputUIUpdater : MonoBehaviour
         }
 
         string extraText = "";
-        if(grappling&&grappling.grapplePoint!=Vector3.zero && (pm.state != PlayerMovement.MovementState.freeze||pm.state != PlayerMovement.MovementState.freeze))
-        {
-            extraText = "\nRMB - To Grapple";
-        }
-        else if(swinging&&swinging.swingPoint!=Vector3.zero && pm.state != PlayerMovement.MovementState.swinging)
+
+        if(swinging&&swinging.swingPoint!=Vector3.zero && pm.state != PlayerMovement.MovementState.swinging)
         {
             extraText = "\nLMB - To Swing";
         }
+        else if(grappling && (pm.state != PlayerMovement.MovementState.grappliing|| pm.state != PlayerMovement.MovementState.freeze))
+            extraText = "\nRMB - To Grapple";
         
         inputText.text+=extraText;
     }

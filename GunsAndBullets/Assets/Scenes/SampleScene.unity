@@ -5611,22 +5611,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00703837d84e6be48bd9ba4836e0ee35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  grappleKey: 324
-  lr: {fileID: 1859204533}
-  lineOringin: {fileID: 1245083962}
   cam: {fileID: 963194228}
-  player: {fileID: 1245083962}
-  whatIsGrappleable:
+  gunTip: {fileID: 1245083962}
+  lr: {fileID: 1859204533}
+  ignorePlayerLayer:
     serializedVersion: 2
-    m_Bits: 512
-  pm: {fileID: 0}
+    m_Bits: 128
   maxGrappleDistance: 50
   grappleDelayTime: 0.25
   overshootYAxis: 1
-  grappleCanvas: {fileID: 612948630}
-  grapplePoint: {x: 0, y: 0, z: 0}
-  grapplingCooldown: 0.5
-  invisisbleGameObject: {fileID: 120471355}
+  grapplingCd: 0
+  grappleKey: 324
 --- !u!114 &1245083968
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8698,7 +8693,9 @@ LineRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Positions: []
+  m_Positions:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 0.1

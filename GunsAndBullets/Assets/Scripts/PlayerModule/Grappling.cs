@@ -5,148 +5,110 @@ using UnityEngine;
 
 public class Grappling : MonoBehaviour
 {
-    [Header("Input")]
-    public KeyCode grappleKey = KeyCode.Mouse1;
     [Header("References")]
+    private PlayerMovement pm;
+    public Transform cam;
+    public Transform gunTip;
     public LineRenderer lr;
-    public Transform lineOringin, cam, player;
-    public LayerMask whatIsGrappleable;
-    public PlayerMovement pm;
+
+    public LayerMask ignorePlayerLayer;
+
     [Header("Grappling")]
     public float maxGrappleDistance;
     public float grappleDelayTime;
     public float overshootYAxis;
-    public GrappleUI grappleCanvas;
-    public Vector3 grapplePoint;
+
+    private Vector3 grapplePoint;
 
     [Header("Cooldown")]
-    public float grapplingCooldown;
-    private float grapplingCooldownTimer;
+    public float grapplingCd;
+    private float grapplingCdTimer;
+
+    [Header("Input")]
+    public KeyCode grappleKey = KeyCode.Mouse1;
 
     private bool grappling;
 
-    private Swinging swing;
-
-    ThirdPersonCam myThirdPersonCamController;
-
-    public Transform invisisbleGameObject;
-
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         pm = GetComponent<PlayerMovement>();
-        swing = GetComponent<Swinging>();
-        myThirdPersonCamController = Camera.main.GetComponent<ThirdPersonCam>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        CheckForGrappleable();
-        UpdateGrappleUI();
-        if(Input.GetKeyDown(grappleKey)) StartGrapple();
-        if(Input.GetKeyUp(grappleKey)) StopGrapple();
+        if (Input.GetKeyDown(grappleKey)) StartGrapple();
 
-        if(grapplingCooldownTimer>0) grapplingCooldownTimer -= Time.deltaTime; 
+        if (grapplingCdTimer > 0)
+            grapplingCdTimer -= Time.deltaTime;
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
-        UpdateLineRender();
+        if (grappling)
+           lr.SetPosition(0, gunTip.position);
     }
-    void StartGrapple()
+
+    private void StartGrapple()
     {
-        if(grappling) return;
-        if(grapplingCooldownTimer > 0) return;
-        if(grapplePoint== Vector3.zero) return;
+        if (grapplingCdTimer > 0) return;
 
-        swing?.StopSwing();
-
-        
         grappling = true;
 
         pm.freeze = true;
-        Invoke(nameof(ExecuteGrappel), grappleDelayTime);
-    }
-    void UpdateLineRender()
-    {
-        if(grappling)
+
+        RaycastHit hit;
+        if(Physics.Raycast(cam.position, cam.forward, out hit, maxGrappleDistance,~ignorePlayerLayer))
         {
-            lr.positionCount = 2;
-            lr.SetPosition(0,player.position);
-            lr.SetPosition(1,grapplePoint);
-            invisisbleGameObject.transform.position = grapplePoint;
-        }
-    }
-    void UpdateGrappleUI()
-    {
-        if(grapplePoint==Vector3.zero)
-        {
-            grappleCanvas.gameObject.SetActive(false);
+            grapplePoint = hit.point;
+
+            Invoke(nameof(ExecuteGrapple), grappleDelayTime);
         }
         else
         {
-            grappleCanvas.transform.position = grapplePoint;
-            grappleCanvas.gameObject.SetActive(true);
+            grapplePoint = cam.position + cam.forward * maxGrappleDistance;
+
+            Invoke(nameof(StopGrapple), grappleDelayTime);
         }
+
+        lr.enabled = true;
+        lr.SetPosition(1, grapplePoint);
     }
 
-
-    private void CheckForGrappleable()
+    private void ExecuteGrapple()
     {
-        if(pm.swinging)return;
-        // reseting swingPoint per detection
-        grapplePoint = Vector3.zero;
-
-        // camera's frustum planes
-        Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
-
-        // sphere cast to detect grappleable objects
-        RaycastHit[] hits = Physics.SphereCastAll(cam.position, 10f, cam.forward, maxGrappleDistance, whatIsGrappleable);
-
-        foreach (var hit in hits)
-        {
-            if (GeometryUtility.TestPlanesAABB(frustumPlanes, hit.collider.bounds))
-            {
-                grapplePoint = hit.point;
-                break;
-            }
-        }
-    }
-    void ExecuteGrappel()
-    {
-        pm.freeze = false;  
-
-        myThirdPersonCamController.SwitchCameraStyle(ThirdPersonCam.CameraStyle.Swinging);
+        pm.freeze = false;
 
         Vector3 lowestPoint = new Vector3(transform.position.x, transform.position.y - 1f, transform.position.z);
 
         float grapplePointRelativeYPos = grapplePoint.y - lowestPoint.y;
         float highestPointOnArc = grapplePointRelativeYPos + overshootYAxis;
 
-        if(grapplePointRelativeYPos<0) highestPointOnArc = overshootYAxis;
+        if (grapplePointRelativeYPos < 0) highestPointOnArc = overshootYAxis;
 
         pm.JumpToPosition(grapplePoint, highestPointOnArc);
-        Invoke(nameof(StopGrapple),1f);
+
+        Invoke(nameof(StopGrapple), 1f);
     }
 
     public void StopGrapple()
     {
-
-        myThirdPersonCamController.SwitchCameraStyle(ThirdPersonCam.CameraStyle.Basic);
-        pm.freeze = false;    
+        pm.freeze = false;
 
         grappling = false;
 
-        grapplingCooldownTimer = grapplingCooldown;
+        grapplingCdTimer = grapplingCd;
 
-        lr.positionCount = 0;
+        lr.enabled = false;
     }
 
-    private void OnDrawGizmos() 
+    public bool IsGrappling()
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(cam.position, 10f);
-        Gizmos.DrawWireSphere(cam.position + cam.forward * maxGrappleDistance,10f);
+        return grappling;
     }
+
+    public Vector3 GetGrapplePoint()
+    {
+        return grapplePoint;
+    }
+
 }
