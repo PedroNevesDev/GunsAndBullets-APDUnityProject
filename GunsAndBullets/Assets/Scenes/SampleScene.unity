@@ -1884,7 +1884,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 525108243}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.04498833, y: -0.000000019248212, z: 0.0000000027184535, w: 0.99898756}
+  m_LocalRotation: {x: 0.04498833, y: 0.0000000148263934, z: -0.0000000020939535, w: 0.99898756}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -2592,7 +2592,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 627071769}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.091372184, y: -0.0000000021940096, z: 4.146751e-10, w: 0.9958169}
+  m_LocalRotation: {x: 0.09137219, y: -0.0000000021940094, z: 4.146751e-10, w: 0.9958168}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -5346,7 +5346,7 @@ MonoBehaviour:
     m_Bits: 64
   wallRunForce: 200
   wallJumpUpForce: 14
-  wallJumpSideForce: 60
+  wallJumpSideForce: 45
   wallClimbSpeed: 3
   maxWallRunTime: 2
   jumpKey: 32
@@ -5402,7 +5402,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cam: {fileID: 963194228}
-  gunTip: {fileID: 1245083962}
+  origin: {fileID: 1245083962}
   lr: {fileID: 1859204533}
   ignorePlayerLayer:
     serializedVersion: 2
@@ -5454,8 +5454,8 @@ MonoBehaviour:
     m_Bits: 1024
   climbSpeed: 10
   maxClimbTime: 0.75
-  climbJumpUpForce: 15
-  climbJumpBackForce: 50
+  climbJumpUpForce: 14
+  climbJumpBackForce: 30
   jumpKey: 32
   climbJumps: 1
   detectionLength: 0.7

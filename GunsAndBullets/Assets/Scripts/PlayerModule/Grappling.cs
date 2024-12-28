@@ -58,7 +58,9 @@ public class Grappling : MonoBehaviour
     private void LateUpdate()
     {
         if (grappling)
+        {
            lr.SetPosition(0, origin.position);
+        }
     }
     
     void CheckForGrappleablePoint()
